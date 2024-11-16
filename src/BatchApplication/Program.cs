@@ -13,6 +13,14 @@ using BatchApplication.Infrastructure.Repositories;
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
+        // -v オプションが指定された場合、BaseUrlを出力して終了
+        if (args.Contains("-v"))
+        {
+            var configuration = context.Configuration;
+            var baseUrl = configuration.GetSection("ApiClient:BaseUrl").Value;
+            Console.WriteLine($"API Base URL: {baseUrl}");
+            Environment.Exit(0);
+        }
         // Configuration
         services.Configure<ApiClientOptions>(context.Configuration.GetSection("ApiClient"));
         services.Configure<RepositoryOptions>(context.Configuration.GetSection("Repository"));
@@ -42,13 +50,6 @@ try
     var weatherRepository = host.Services.GetRequiredService<IWeatherRepository>();
     var logger = host.Services.GetRequiredService<ILogger<Program>>();
     var apiOptions = host.Services.GetRequiredService<IOptions<ApiClientOptions>>();
-
-    // -v オプションが指定された場合、BaseUrlを出力
-    if (args.Contains("-v"))
-    {
-        logger.LogInformation("API Base URL: {BaseUrl}", apiOptions.Value.BaseUrl);
-        return;
-    }
 
     // サンプル実行
     var locations = new[] { "Tokyo", "New York", "London" };
