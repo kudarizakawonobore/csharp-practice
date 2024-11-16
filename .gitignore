@@ -174,3 +174,5 @@ appsettings.Production.json
 # Keep these files
 !appsettings.json
 !appsettings.Example.json
+
+pulish/
