@@ -28,7 +28,6 @@ nupkg/
 [Rr]eleases/
 x64/
 x86/
-build/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -157,3 +156,21 @@ docker-compose.override.yml
 project.nuget.cache
 */project.nuget.cache
 **/*.nuget.cache
+
+# Settings files
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.Production.json
+
+# Keep these files
+!appsettings.json
+!appsettings.Example.json
+
+# Settings files
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.Production.json
+
+# Keep these files
+!appsettings.json
+!appsettings.Example.json

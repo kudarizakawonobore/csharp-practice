@@ -1,0 +1,106 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ main, staging ]
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && !contains(github.ref, 'main') && !contains(github.ref, 'staging')
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
+      
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+  build-staging:
+    name: Build Staging
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/staging'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+        
+    - name: Build
+      run: dotnet run --project build/Build.csproj -- --environment Staging --configuration Release
+      
+    - name: Upload Staging Build
+      uses: actions/upload-artifact@v3
+      with:
+        name: staging-build
+        path: publish/Staging
+        retention-days: 5
+
+  build-production:
+    name: Build Production
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Install build tools
+      run: dotnet tool restore
+        
+    - name: Build
+      run: dotnet run --project build/Build.csproj -- --environment Production --configuration Release
+      
+    - name: Upload Production Build
+      uses: actions/upload-artifact@v3
+      with:
+        name: production-build
+        path: publish/Production
+        retention-days: 30
+
+  security-scan:
+    name: Security Scan
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run security scan
+      uses: github/codeql-action/init@v2
+      with:
+        languages: 'csharp'
+        
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2

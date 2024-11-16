@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using BatchApplication.Core.Common.ApiClient;
 using BatchApplication.Core.Common.Repository;
 using BatchApplication.Core.Interfaces;
@@ -40,6 +41,14 @@ try
     var weatherClient = host.Services.GetRequiredService<IWeatherApiClient>();
     var weatherRepository = host.Services.GetRequiredService<IWeatherRepository>();
     var logger = host.Services.GetRequiredService<ILogger<Program>>();
+    var apiOptions = host.Services.GetRequiredService<IOptions<ApiClientOptions>>();
+
+    // -v オプションが指定された場合、BaseUrlを出力
+    if (args.Contains("-v"))
+    {
+        logger.LogInformation("API Base URL: {BaseUrl}", apiOptions.Value.BaseUrl);
+        return;
+    }
 
     // サンプル実行
     var locations = new[] { "Tokyo", "New York", "London" };
