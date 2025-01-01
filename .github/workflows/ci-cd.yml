@@ -21,7 +21,7 @@ jobs:
         dotnet-version: '8.0.x'
         
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet run --project build/Build.csproj -- --environment Production --configuration Release --runtime win-x64
       
     - name: Build
       run: dotnet build --no-restore
